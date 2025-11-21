@@ -1,0 +1,27 @@
+{
+  "visual studio code": "whitelist",
+  "pycharm": "whitelist",
+  "intellij idea": "whitelist",
+  "github desktop": "whitelist",
+  "postman": "whitelist",
+  "docker desktop": "whitelist",
+  "7-zip": "whitelist",
+  "vlc media player": "whitelist",
+  "adobe reader": "whitelist",
+
+  "utorrent": "blacklist",
+  "bittorrent": "blacklist",
+  "teamviewer": "blacklist",
+  "anydesk": "blacklist",
+  "whatsapp desktop": "blacklist",
+
+  "jira": "requires_manager_approval",
+  "confluence": "requires_manager_approval",
+  "adobe photoshop": "requires_manager_approval",
+  "adobe illustrator": "requires_manager_approval",
+  "tableau": "requires_manager_approval",
+  "power bi": "requires_manager_approval",
+  "sql server management studio": "requires_manager_approval",
+  "vmware workstation": "requires_manager_approval",
+  "postgresql": "requires_manager_approval"
+}

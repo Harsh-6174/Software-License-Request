@@ -1,6 +1,6 @@
 from database.db_connection import get_connection
 
-def user_exists(employee_id):
+def user_exists(employee_id: str):
     conn = get_connection()
     cur = conn.cursor()
 
