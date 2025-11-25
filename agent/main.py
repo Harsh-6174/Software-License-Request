@@ -2,6 +2,7 @@ import asyncio
 from langgraph.types import Command
 from agent.workflow import build_graph
 
+# python -m agent.main
 async def main(app):
     config = {"configurable": {"thread_id": "user-session-001"}}
     initial_state = {
