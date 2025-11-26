@@ -1,4 +1,4 @@
-from rapidfuzz import fuzz, process
+from rapidfuzz import process
 import json
 
 with open("microservices/softwares.json") as f:
@@ -12,6 +12,4 @@ def resolve_software_name(software_name: str):
     if score < 50:
         return None, None
 
-    category = softwares[best_match]
-
-    return best_match, category
+    return best_match, softwares[best_match]

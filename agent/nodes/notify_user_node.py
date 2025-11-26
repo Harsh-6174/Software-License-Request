@@ -1,7 +1,6 @@
 def notify_user_node(state):
     if state["is_request_valid"] is False:
-        reason = state["reason_rejection"]
-        print(f"Your request was denied. Reason: {reason}")
+        print(f"Your request was denied. Reason: {state["reason_rejection"]}")
         return state
     elif state["manager_decision"] != "approved" and state["requires_manager_approval"]:
         print(f"Your request was denied. Reason: {state["reason_rejection"]}")

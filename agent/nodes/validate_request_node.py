@@ -19,25 +19,3 @@ async def validate_request_node(state):
         state["requires_manager_approval"] = False
         state["reason_rejection"] = "Invalid employee ID"
         return state
-
-    req = state["software_requested"].lower()
-    best_match, category = resolve_software_name(req)
-
-    print(f"Best Software Match : {best_match}")
-
-    if category == "whitelist":
-        state["is_request_valid"] = True
-        state["requires_manager_approval"] = False
-    elif category == "blacklist":
-        state["is_request_valid"] = False
-        state["requires_manager_approval"] = False
-        state["reason_rejection"] = "Software is blacklisted"
-    elif category == "requires_manager_approval":
-        state["is_request_valid"] = True
-        state["requires_manager_approval"] = True
-    else:
-        print("No category detected, going to manager.........")
-        state["is_request_valid"] = True
-        state["requires_manager_approval"] = True
-    
-    return state

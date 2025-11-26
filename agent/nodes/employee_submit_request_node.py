@@ -43,12 +43,6 @@ async def employee_submit_request_node(state):
                 "prompt": "You didn’t mentioned your Employee ID. Enter it now."
             }
         )
-        # while not is_valid_requester_id(requester_id):
-        #     requester_id = interrupt(
-        #         value = {
-        #             "prompt" : "Invalid Employee ID. Please try again."
-        #         }
-        #     )
 
     if not software_requested: 
         software_requested = interrupt( 

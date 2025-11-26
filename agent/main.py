@@ -10,7 +10,11 @@ async def main(app):
         "software_requested": "",
         "request_reason": "",
         "is_request_valid": False,
-        "requires_manager_approval": True,
+        "requires_manager_approval": False,
+        "software_source": "",
+        "software_type": "",
+        "is_software_restricted": False,
+        "is_software_blacklisted": False,
         "reason_rejection": "",
         "manager_decision": "",
         "llm_response": {}

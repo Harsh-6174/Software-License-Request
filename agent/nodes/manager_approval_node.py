@@ -7,9 +7,12 @@ def manager_approval_node(state):
             "request_details" : {
                 "employee_id" : state["requester_id"],
                 "software_requested" : state["software_requested"],
-                "request_reason" : state["request_reason"]
+                "request_reason" : state["request_reason"],
+                "software_source" : state["software_source"],
+                "software_restricted" : state["is_software_restricted"],
+                "software_blacklisted" : state["is_software_blacklisted"],
             },
-            "options" : ["Approved", "denied"]
+            "options" : ["Approve", "deny"]
         }
     )
 
@@ -25,6 +28,7 @@ def manager_approval_node(state):
 
     if manager_response.lower().startswith("appr"):
         state["manager_decision"] = "approved"
+        state["is_request_valid"] = True
         print("Request approved by manager.")
         return state
 
