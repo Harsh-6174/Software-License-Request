@@ -1,10 +1,20 @@
 from fastapi import FastAPI
-from .user_verification import user_exists
+from database.db_connection import get_connection
 
 app = FastAPI()
 
 @app.get("/check-user")
 def check_user(employee_id : str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT COUNT(*) FROM employees WHERE LOWER(id) = LOWER(%s)", (employee_id,))
+
+    count = cur.fetchone()[0]
+
+    cur.close()
+    conn.close()
+
     return {
-        "exists" : user_exists(employee_id)
+        "exists" : count > 0
     }

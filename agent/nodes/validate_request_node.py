@@ -15,10 +15,12 @@ async def validate_request_node(state):
     print(f"User Exists? - {data['exists']}")
     
     if data["exists"] is False:
+        state["is_requester_id_valid"] = False
         state["is_request_valid"] = False
         state["requires_manager_approval"] = False
         state["reason_rejection"] = "Invalid employee ID"
     else:
+        state["is_requester_id_valid"] = True
         state["is_request_valid"] = True
     
     return state

@@ -29,6 +29,7 @@ def manager_approval_node(state):
     if manager_response.lower().startswith("appr"):
         state["manager_decision"] = "approved"
         state["is_request_valid"] = True
+        state["reason_rejection"] = ""
         print("Request approved by manager.")
         return state
 

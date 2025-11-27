@@ -17,44 +17,44 @@ from agent.nodes.logging_process_node import logging_process_node
 
 def build_graph():
     def route_after_validation(state):
-        if state["is_request_valid"] is False:
-            return "notify_user"
+        if state["is_request_valid"] is False and state["is_requester_id_valid"] is False:
+            return "Invalid"
         else:
-            return "check_workelevate_repo"
+            return "Valid"
 
     def route_after_check_workelevate_repo(state):
         if state["software_source"] != "workelevate":
-            return "check_sam"
+            return "no"
         
         if state["software_type"] == "standard":
-            return "license_allocation"
+            return "standard"
         else:
-            return "manager_approval"
+            return "licensed"
         
     def route_after_check_sam(state):
         if state["software_source"] == "sam":
-            return "check_sam_internal"
+            return "Yes"
         else:
-            return "check_external"
+            return "No"
     
     def route_after_check_sam_internal(state):
         if state["is_software_blacklisted"]:
-            return "reject_request"
+            return "Blacklisted"
         if state["is_software_restricted"]:
-            return "manager_approval"
-        return "license_allocation"
+            return "Restricted"
+        return "Neither"
     
     def route_after_check_external(state):
         if state["is_software_blacklisted"]:
-            return "reject_request"
+            return "Blacklisted"
         else:
-            return "manager_approval"
+            return "Otherwise"
 
     def route_after_manager_approval(state):
         if state["manager_decision"] == "approved":
-            return "license_allocation"
+            return "Yes"
         else:
-            return "reject_request"
+            return "No"
 
     graph = StateGraph(SoftwareRequestState)
 
@@ -80,8 +80,8 @@ def build_graph():
         "validate_request",
         route_after_validation,
         {
-            "notify_user": "notify_user",
-            "check_workelevate_repo": "check_workelevate_repo"
+            "Invalid": "employee_submit_request",
+            "Valid": "check_workelevate_repo"
         }
     )
 
@@ -89,9 +89,9 @@ def build_graph():
         "check_workelevate_repo",
         route_after_check_workelevate_repo,
         {
-            "check_sam": "check_sam",
-            "license_allocation": "license_allocation",
-            "manager_approval": "manager_approval"
+            "no": "check_sam",
+            "standard": "license_allocation",
+            "licensed": "manager_approval"
         }
     )
 
@@ -99,8 +99,8 @@ def build_graph():
         "check_sam",
         route_after_check_sam,
         {
-            "check_sam_internal": "check_sam_internal",
-            "check_external": "check_external"
+            "Yes": "check_sam_internal",
+            "No": "check_external"
         }
     )
 
@@ -108,9 +108,9 @@ def build_graph():
         "check_sam_internal",
         route_after_check_sam_internal,
         {
-            "manager_approval": "manager_approval",
-            "reject_request": "reject_request",
-            "license_allocation": "license_allocation"
+            "Restricted": "manager_approval",
+            "Blacklisted": "reject_request",
+            "Neither": "license_allocation"
         }
     )
 
@@ -118,8 +118,8 @@ def build_graph():
         "check_external",
         route_after_check_external,
         {
-            "reject_request": "reject_request",
-            "manager_approval": "manager_approval"
+            "Blacklisted": "reject_request",
+            "Otherwise": "manager_approval"
         }
     )
 
@@ -127,8 +127,8 @@ def build_graph():
         "manager_approval",
         route_after_manager_approval,
         {
-            "reject_request": "reject_request",
-            "license_allocation": "license_allocation"
+            "No": "reject_request",
+            "Yes": "license_allocation"
         }
     )
 

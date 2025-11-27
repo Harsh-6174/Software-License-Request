@@ -1,8 +1,19 @@
 from langgraph.types import interrupt
 from agent.llm.gemini_llm import run_llm
-import json
+import json, re
 
 async def employee_submit_request_node(state):
+    if state["is_requester_id_valid"] is False:
+        new_id = interrupt(
+            value = {
+                "prompt": "The Employee ID you entered is invalid. Please enter a valid ID."
+            }
+        )
+        match = re.search(r"\b([a-zA-Z]{2}\d{4})\b", new_id)
+        state["requester_id"] = match.group(1).upper()
+        state["is_requester_id_valid"] = None
+        return state
+
     user_message = interrupt(
         value = {
             "prompt" : "Describe your request in one message."
@@ -37,25 +48,25 @@ async def employee_submit_request_node(state):
     software_requested = output.get("software_requested")
     request_reason = output.get("request_reason")
 
-    if not requester_id:
-        requester_id = interrupt(
-            value = {
-                "prompt": "You didn’t mentioned your Employee ID. Enter it now."
-            }
-        )
-
     if not software_requested: 
         software_requested = interrupt( 
             value = { 
                 "prompt" : "Which software do you need?" 
             } 
         ) 
-
+    
     if not request_reason: 
         request_reason = interrupt( 
             value = { 
                 "prompt" : "State the reason for requesting software." 
             } 
+        )
+    
+    if not requester_id:
+        requester_id = interrupt(
+            value = {
+                "prompt": "You didn’t mentioned your Employee ID. Enter it now."
+            }
         )
 
     state["requester_id"] = requester_id.upper()

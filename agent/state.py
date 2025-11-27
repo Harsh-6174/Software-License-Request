@@ -2,6 +2,7 @@ from typing import TypedDict
 
 class SoftwareRequestState(TypedDict):
     requester_id : str
+    is_requester_id_valid: bool
     software_requested : str
     request_reason : str
     is_request_valid : bool
