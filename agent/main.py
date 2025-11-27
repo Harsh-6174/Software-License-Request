@@ -15,8 +15,8 @@ async def main(app):
         "software_type": "",
         "is_software_restricted": False,
         "is_software_blacklisted": False,
-        "reason_rejection": "",
         "manager_decision": "",
+        "reason_rejection": "",
         "llm_response": {}
     }
 

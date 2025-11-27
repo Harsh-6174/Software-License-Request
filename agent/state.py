@@ -10,6 +10,6 @@ class SoftwareRequestState(TypedDict):
     software_type: str
     is_software_restricted: bool
     is_software_blacklisted: bool
-    reason_rejection : str
     manager_decision : str
+    reason_rejection : str
     llm_response : str

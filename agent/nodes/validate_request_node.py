@@ -18,4 +18,7 @@ async def validate_request_node(state):
         state["is_request_valid"] = False
         state["requires_manager_approval"] = False
         state["reason_rejection"] = "Invalid employee ID"
-        return state
+    else:
+        state["is_request_valid"] = True
+    
+    return state

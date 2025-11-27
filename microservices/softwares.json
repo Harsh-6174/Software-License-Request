@@ -151,6 +151,12 @@
     "is_restricted": true,
     "is_blacklisted": false
   },
+  "microsoft visio": {
+  "source": "sam",
+  "license_type": "licensed",
+  "is_restricted": false,
+  "is_blacklisted": false
+  },
 
   "sql server management studio": {
     "source": "workelevate",

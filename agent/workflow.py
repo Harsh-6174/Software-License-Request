@@ -16,6 +16,12 @@ from agent.nodes.logging_process_node import logging_process_node
 
 
 def build_graph():
+    def route_after_validation(state):
+        if state["is_request_valid"] is False:
+            return "notify_user"
+        else:
+            return "check_workelevate_repo"
+
     def route_after_check_workelevate_repo(state):
         if state["software_source"] != "workelevate":
             return "check_sam"
@@ -66,10 +72,18 @@ def build_graph():
 
     graph.add_edge(START, "employee_submit_request")
     graph.add_edge("employee_submit_request", "validate_request")
-    graph.add_edge("validate_request", "check_workelevate_repo")
     graph.add_edge("reject_request", "notify_user")
     graph.add_edge("license_allocation", "notify_user")
     graph.add_edge("notify_user", "logging_process")
+
+    graph.add_conditional_edges(
+        "validate_request",
+        route_after_validation,
+        {
+            "notify_user": "notify_user",
+            "check_workelevate_repo": "check_workelevate_repo"
+        }
+    )
 
     graph.add_conditional_edges(
         "check_workelevate_repo",
