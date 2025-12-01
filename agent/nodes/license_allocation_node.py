@@ -47,6 +47,6 @@ def license_allocation_node(state):
         if state["manager_decision"] == "approved":
             print("Wrongly reached License allocation")
         incident = raise_license_allocation_incident(user_sys_id, software_name, description)
-        print(f"Incident for license allocation raised successfully :")
+        print(f"Incident for license allocation raised successfully : {incident.get("result", {}).get("number", "invalid")}")
 
     return state
