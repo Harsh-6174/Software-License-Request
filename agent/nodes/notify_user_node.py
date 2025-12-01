@@ -6,3 +6,5 @@ def notify_user_node(state):
         print(f"Your request was denied. Reason: {state["reason_rejection"]}")
     else:
         print("Software has been installed")
+    
+    return state

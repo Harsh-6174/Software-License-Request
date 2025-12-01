@@ -7,6 +7,9 @@ async def main(app):
     config = {"configurable": {"thread_id": "user-session-001"}}
     initial_state = {
         "requester_id": "",
+        "requester_email": "admin@example.com",
+        "requester_sys_id": "6816f79cc0a8016401c5a33be04be441",
+        "incident_raised": False,
         "is_requester_id_valid": None,
         "software_requested": "",
         "request_reason": "",

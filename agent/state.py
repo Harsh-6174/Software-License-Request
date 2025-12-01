@@ -2,6 +2,9 @@ from typing import TypedDict
 
 class SoftwareRequestState(TypedDict):
     requester_id : str
+    requester_email: str
+    requester_sys_id: str
+    incident_raised: bool
     is_requester_id_valid: bool
     software_requested : str
     request_reason : str
