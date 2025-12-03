@@ -44,9 +44,8 @@ def license_allocation_node(state):
     (state["software_source"] == "sam" and state["is_software_restricted"] is False and state["is_software_blacklisted"] is False))
 
     if auto_approved_condition:
-        if state["manager_decision"] == "approved":
-            print("Wrongly reached License allocation")
         incident = raise_license_allocation_incident(user_sys_id, software_name, description)
+        state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
         print(f"Incident for license allocation raised successfully : {incident.get("result", {}).get("number", "invalid")}")
 
     return state

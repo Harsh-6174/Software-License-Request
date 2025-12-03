@@ -8,7 +8,8 @@ async def main(app):
     initial_state = {
         "requester_id": "",
         "requester_email": "admin@example.com",
-        "requester_sys_id": "6816f79cc0a8016401c5a33be04be441",
+        "requester_sys_id": "",
+        "incident_sys_id": "",
         "incident_raised": False,
         "is_requester_id_valid": None,
         "software_requested": "",
