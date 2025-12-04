@@ -1,9 +1,5 @@
 from langgraph.types import interrupt
-from dotenv import load_dotenv
-import os, requests
-from requests.auth import HTTPBasicAuth
-
-load_dotenv()
+from microservices.close_incident import close_incident
 
 def manager_approval_node(state):
     requester_id = state["requester_id"]
@@ -33,6 +29,22 @@ def manager_approval_node(state):
         )
         state["manager_decision"] = "denied"
         state["reason_rejection"] = reason or "Not Provided."
+
+        incident_sys_id = state["incident_sys_id"]
+        if incident_sys_id:
+            closure_note = (f"Manager denied request for {software_name} installation. "
+                            f"Reason: {state['reason_rejection']}.")
+            
+            payload = {
+                "caller": "admin",
+                "short_description": f"Manager approval for {software_name} requested by {requester_id} (Rejected)",
+                "close_code": "Solution provided",
+                "incident_state": "7",
+                "close_notes": closure_note,
+                "resolved_by": "system"
+            }
+            close_incident(incident_sys_id, payload)
+
         return state
 
     if manager_response.lower().startswith("appr"):
@@ -40,6 +52,21 @@ def manager_approval_node(state):
         state["is_request_valid"] = True
         state["reason_rejection"] = ""
         print("Request approved by manager.")
+
+        incident_sys_id = state["incident_sys_id"]
+        if incident_sys_id:
+            closure_note = (f"Manager approved request for {software_name} installation.")
+
+            payload = {
+                "caller": "admin",
+                "short_description": f"Manager approval for {software_name} requested by {requester_id} (Approved)",
+                "close_code": "Solution provided",
+                "incident_state": "7",
+                "close_notes": closure_note,
+                "resolved_by": "system"
+            }
+            close_incident(incident_sys_id, payload)
+        
         return state
 
     state["manager_decision"] = "denied"

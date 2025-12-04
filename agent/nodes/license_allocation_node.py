@@ -48,4 +48,5 @@ def license_allocation_node(state):
         state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
         print(f"Incident for license allocation raised successfully : {incident.get("result", {}).get("number", "invalid")}")
 
+    #Endpoint installation API remaining
     return state

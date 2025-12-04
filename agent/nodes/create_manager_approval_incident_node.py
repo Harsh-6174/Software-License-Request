@@ -50,6 +50,7 @@ def create_manager_approval_incident_node(state):
         print("Creating Manager Approval Incident")
         incident = raise_manager_approval_incident(user_sys_id, software_name, description)
         state["incident_raised"] = True
+        state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
         print(f"Incident created: {incident.get('result', {}).get('number', 'invalid')}")
 
     return state

@@ -1,8 +1,8 @@
 import httpx, os
 from dotenv import load_dotenv
-from microservices.software_name_match import resolve_software_name
 
 load_dotenv()
+
 instance = os.getenv("SERVICENOW_INSTANCE")
 username = os.getenv("SERVICENOW_USERNAME")
 password = os.getenv("SERVICENOW_PASSWORD")

@@ -44,8 +44,9 @@ def check_external_node(state):
         return state
     
     print("Requested software requires manager approval as it is not present in the organization's repo.")
-    raise_complete_approval_workflow_incident(user_sys_id, software_name, description)
-    print("External software incident raised successfully.")
+    incident = raise_complete_approval_workflow_incident(user_sys_id, software_name, description)
+    state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
+    print(f"External software incident raised successfully : {incident.get("result", {}).get("number", "invalid")}")
     
     state["is_request_valid"] = True
     state["requires_manager_approval"] = True
