@@ -7,6 +7,9 @@ from agent.nodes.check_workelevate_repo_node import check_workelevate_repo_node
 from agent.nodes.check_sam_node import check_sam_node
 from agent.nodes.check_sam_internal_node import check_sam_internal_node
 from agent.nodes.check_external_node import check_external_node
+from agent.nodes.L1_security_network_approval_node import security_network_approval_node
+from agent.nodes.L2_sam_approval_node import sam_approval_node
+from agent.nodes.L3_software_packaging_node import software_packaging_node
 from agent.nodes.create_manager_approval_incident_node import create_manager_approval_incident_node
 from agent.nodes.manager_approval_node import manager_approval_node
 from agent.nodes.reject_request_node import reject_request_node
@@ -51,6 +54,21 @@ def build_graph():
         else:
             return "Otherwise"
 
+    def route_after_security_network(state):
+        if state["security_approval"] and state["network_approval"]:
+            if state["software_type"] == "licensed":
+                return "licensed"
+            else:
+                return "standard"
+        
+        return "No Approval"
+    
+    def route_after_sam_approval(state):
+        if state["sam_approval"]:
+            return "approved"
+        else:
+            return "No Approval"
+
     def route_after_manager_approval(state):
         if state["manager_decision"] == "approved":
             return "Yes"
@@ -65,6 +83,9 @@ def build_graph():
     graph.add_node("check_sam", check_sam_node)
     graph.add_node("check_sam_internal", check_sam_internal_node)
     graph.add_node("check_external", check_external_node)
+    graph.add_node("security_network_approval", security_network_approval_node)
+    graph.add_node("sam_approval", sam_approval_node)
+    graph.add_node("software_packaging", software_packaging_node)
     graph.add_node("create_manager_approval_incident", create_manager_approval_incident_node)
     graph.add_node("manager_approval", manager_approval_node)
     graph.add_node("reject_request", reject_request_node)
@@ -76,6 +97,7 @@ def build_graph():
     graph.add_edge("employee_submit_request", "validate_request")
     graph.add_edge("reject_request", "notify_user")
     graph.add_edge("create_manager_approval_incident", "manager_approval")
+    graph.add_edge("software_packaging", "license_allocation")
     graph.add_edge("license_allocation", "notify_user")
     graph.add_edge("notify_user", "logging_process")
 
@@ -122,7 +144,26 @@ def build_graph():
         route_after_check_external,
         {
             "Blacklisted": "reject_request",
-            "Otherwise": "manager_approval"
+            "Otherwise": "security_network_approval"
+        }
+    )
+
+    graph.add_conditional_edges(
+        "security_network_approval",
+        route_after_security_network,
+        {
+            "No Approval": "notify_user",
+            "licensed": "sam_approval",
+            "standard": "software_packaging"
+        }
+    )
+
+    graph.add_conditional_edges(
+        "sam_approval",
+        route_after_sam_approval,
+        {
+            "No Approval": "notify_user",
+            "approved": "software_packaging"
         }
     )
 

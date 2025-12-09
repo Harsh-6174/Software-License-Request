@@ -17,7 +17,7 @@ def manager_approval_node(state):
                 "software_restricted" : state["is_software_restricted"],
                 "software_blacklisted" : state["is_software_blacklisted"],
             },
-            "options" : ["Approve", "deny"]
+            "options" : ["Approve", "Deny"]
         }
     )
 

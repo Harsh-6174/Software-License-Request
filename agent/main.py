@@ -2,11 +2,13 @@ import asyncio
 from langgraph.types import Command
 from agent.workflow import build_graph
 
-# python -m agent.main
-async def main(app):
-    config = {"configurable": {"thread_id": "user-session-001"}}
+app = build_graph()
+
+async def run_software_request_workflow(requester_id: str, thread_id: str):
+    config = {"configurable": {"thread_id": thread_id}}
     initial_state = {
-        "requester_id": "",
+        "requester_id": requester_id,
+        "thread_id": thread_id,
         "requester_email": "admin@example.com",
         "requester_sys_id": "",
         "incident_sys_id": "",
@@ -18,6 +20,9 @@ async def main(app):
         "requires_manager_approval": False,
         "software_source": "",
         "software_type": "",
+        "security_approval": None,
+        "network_approval": None,
+        "sam_approval": None,
         "is_software_restricted": False,
         "is_software_blacklisted": False,
         "manager_decision": "",
@@ -56,10 +61,6 @@ async def main(app):
             print("----------------------------- Workflow completed -----------------------------")
             break
 
-app = build_graph()
-
 image = app.get_graph().draw_mermaid_png()
 with open("graph.png", "wb") as f:
     f.write(image)
-
-asyncio.run(main(app))

@@ -2,6 +2,7 @@ from typing import TypedDict
 
 class SoftwareRequestState(TypedDict):
     requester_id : str
+    thread_id = str
     requester_email: str
     requester_sys_id: str
     incident_sys_id: str
@@ -13,6 +14,9 @@ class SoftwareRequestState(TypedDict):
     requires_manager_approval : bool
     software_source: str
     software_type: str
+    security_approval: bool
+    network_approval: bool
+    sam_approval: bool
     is_software_restricted: bool
     is_software_blacklisted: bool
     manager_decision : str

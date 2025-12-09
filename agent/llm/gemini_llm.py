@@ -10,5 +10,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 async def run_llm(prompt):
-    response = await llm.ainvoke(prompt)
-    return response.content
+    # response = await llm.ainvoke(prompt)
+    # return response.content
+
+    return '{"requester_id": "", "software_requested": "anydesk", "request_reason": "remote access"}'

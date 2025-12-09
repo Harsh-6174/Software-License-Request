@@ -44,7 +44,8 @@ async def employee_submit_request_node(state):
     state["llm_response"] = output
     output = json.loads(output)
 
-    requester_id = output.get("requester_id")
+    # requester_id = output.get("requester_id")
+    requester_id = state["requester_id"]
     software_requested = output.get("software_requested")
     request_reason = output.get("request_reason")
 

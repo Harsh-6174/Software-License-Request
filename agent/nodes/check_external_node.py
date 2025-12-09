@@ -48,6 +48,7 @@ def check_external_node(state):
     state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
     print(f"External software incident raised successfully : {incident.get("result", {}).get("number", "invalid")}")
     
+    state["incident_raised"] = True
     state["is_request_valid"] = True
     state["requires_manager_approval"] = True
     
