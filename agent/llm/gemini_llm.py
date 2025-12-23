@@ -9,8 +9,8 @@ llm = ChatGoogleGenerativeAI(
     google_api_key = os.getenv("GOOGLE_API_KEY")
 )
 
-async def run_llm(prompt):
+def run_llm(prompt):
     # response = await llm.ainvoke(prompt)
     # return response.content
 
-    return '{"requester_id": "", "software_requested": "anydesk", "request_reason": "remote access"}'
+    return '{"requester_id": "", "software_requested": "pycharm", "request_reason": "coding"}'

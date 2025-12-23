@@ -7,10 +7,10 @@ instance = os.getenv("SERVICENOW_INSTANCE")
 username = os.getenv("SERVICENOW_USERNAME")
 password = os.getenv("SERVICENOW_PASSWORD")
 
-async def validate_request_node(state):
+def validate_request_node(state):
     requester_id = state["requester_id"]
-    async with httpx.AsyncClient() as client:
-        res = await client.get(
+    with httpx.Client() as client:
+        res = client.get(
             "http://localhost:8000/check-user",
             params = {
                 "employee_id" : requester_id
@@ -28,8 +28,8 @@ async def validate_request_node(state):
         return state
 
     url = f"{instance}/api/now/table/sys_user"
-    async with httpx.AsyncClient() as client:
-        user_sys_id = await client.get(
+    with httpx.Client() as client:
+        user_sys_id = client.get(
             url,
             params = {
                 "email": "admin@example.com",

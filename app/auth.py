@@ -1,6 +1,6 @@
 USERS = {
     "WE3729": {"password": "123", "role": "employee"},
-    "WE2001": {"password": "123", "role": "manager"},
+    "WE4377": {"password": "123", "role": "manager"},
     "WE3001": {"password": "123", "role": "L1"},
     "WE3002": {"password": "123", "role": "L2"},
     "WE3003": {"password": "123", "role": "L3"},

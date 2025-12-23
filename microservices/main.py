@@ -10,7 +10,7 @@ def check_user(employee_id : str):
 
     cur.execute("SELECT COUNT(*) FROM employees WHERE LOWER(id) = LOWER(%s)", (employee_id,))
 
-    count = cur.fetchone()[0]
+    count = cur.fetchone()["count"]
 
     cur.close()
     conn.close()

@@ -2,11 +2,11 @@ from typing import TypedDict
 
 class SoftwareRequestState(TypedDict):
     requester_id : str
-    thread_id = str
+    role: str
+    thread_id: str
     requester_email: str
     requester_sys_id: str
     incident_sys_id: str
-    incident_raised: bool
     is_requester_id_valid: bool
     software_requested : str
     request_reason : str

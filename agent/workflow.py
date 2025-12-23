@@ -1,5 +1,9 @@
 from langgraph.graph import START, END, StateGraph
+import aiosqlite
+import sqlite3
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from agent.state import SoftwareRequestState
 from agent.nodes.employee_submit_request_node import employee_submit_request_node
 from agent.nodes.validate_request_node import validate_request_node
@@ -20,11 +24,28 @@ from agent.nodes.logging_process_node import logging_process_node
 
 
 def build_graph():
+    # conn = await aiosqlite.connect("workflow_state_async.db")
+    # checkpointer = AsyncSqliteSaver(conn)
+    
+    # conn = sqlite3.connect("workflow_state.db")
+    # checkpointer = SqliteSaver(conn)
+
+    conn = sqlite3.connect(
+        "workflow_state.db",
+        check_same_thread=False
+    )
+    checkpointer = SqliteSaver(conn)
+
     def route_after_validation(state):
         if state["is_request_valid"] is False and state["is_requester_id_valid"] is False:
             return "Invalid"
         else:
             return "Valid"
+    
+    def route_after_incident_creation(state):
+        if state["role"] == "employee":
+            return "END"
+        return "manager"
 
     def route_after_check_workelevate_repo(state):
         if state["software_source"] != "workelevate":
@@ -96,7 +117,7 @@ def build_graph():
     graph.add_edge(START, "employee_submit_request")
     graph.add_edge("employee_submit_request", "validate_request")
     graph.add_edge("reject_request", "notify_user")
-    graph.add_edge("create_manager_approval_incident", "manager_approval")
+    # graph.add_edge("create_manager_approval_incident", "manager_approval")
     graph.add_edge("software_packaging", "license_allocation")
     graph.add_edge("license_allocation", "notify_user")
     graph.add_edge("notify_user", "logging_process")
@@ -117,6 +138,15 @@ def build_graph():
             "no": "check_sam",
             "standard": "license_allocation",
             "licensed": "create_manager_approval_incident"
+        }
+    )
+
+    graph.add_conditional_edges(
+        "create_manager_approval_incident",
+        route_after_incident_creation,
+        {
+            "END": END,
+            "manager": "manager_approval",
         }
     )
 
@@ -178,7 +208,6 @@ def build_graph():
 
     graph.add_edge("logging_process", END)
 
-    memory = MemorySaver()
-    app = graph.compile(checkpointer=memory)
+    app = graph.compile(checkpointer=checkpointer)
 
     return app

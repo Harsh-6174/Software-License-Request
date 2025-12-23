@@ -157,90 +157,164 @@ def raise_external_software_incident():
 
 
 
+# def security_network_approval_node(state):
+#     requester_id = state["requester_id"]
+#     software_name = state["software_requested"]
+#     user_email = state["requester_email"]
+#     user_sys_id = state["requester_sys_id"]
+
+#     if state["security_approval"] is None:
+
+#         security_response = interrupt(
+#             value={
+#                 "prompt": "L1 - Security Approval is required",
+#                 "request_details": {
+#                     "employee_id": requester_id,
+#                     "software_requested": software_name,
+#                     "request_reason": state["request_reason"],
+#                     "software_restricted": state["is_software_restricted"],
+#                     "software_blacklisted": state["is_software_blacklisted"]
+#                 },
+#                 "options": ["Approve", "Deny"]
+#             }
+#         )
+
+#         if security_response.lower().startswith("den"):
+#             reason = interrupt(
+#                 value={"prompt": "Please provide the reason for rejecting this request."}
+#             )
+
+#             state["security_approval"] = False
+#             state["reason_rejection"] = reason or "Not Provided"
+
+#             if state.get("incident_sys_id"):
+#                 payload = {
+#                     "caller": "admin",
+#                     "short_description": f"Security rejected {software_name} request by {requester_id}",
+#                     "close_code": "Rejected by Security",
+#                     "incident_state": "7",
+#                     "close_notes": f"Security denied {software_name}. Reason: {state['reason_rejection']}.",
+#                     "resolved_by": "system"
+#                 }
+#                 close_incident(state["incident_sys_id"], payload)
+
+#             return state
+
+#         state["security_approval"] = True
+
+#     if state["network_approval"] is None:
+
+#         network_response = interrupt(
+#             value={
+#                 "prompt": "L1 - Network Approval is required",
+#                 "request_details": {
+#                     "employee_id": requester_id,
+#                     "software_requested": software_name,
+#                     "request_reason": state["request_reason"],
+#                     "software_restricted": state["is_software_restricted"],
+#                     "software_blacklisted": state["is_software_blacklisted"]
+#                 },
+#                 "options": ["Approve", "Deny"]
+#             }
+#         )
+
+#         if network_response.lower().startswith("den"):
+#             reason = interrupt(
+#                 value={"prompt": "Please provide the reason for rejecting this request."}
+#             )
+
+#             state["network_approval"] = False
+#             state["reason_rejection"] = reason or "Not Provided"
+
+#             if state.get("incident_sys_id"):
+#                 payload = {
+#                     "caller": "admin",
+#                     "short_description": f"Network rejected {software_name} request by {requester_id}",
+#                     "close_code": "Rejected by Network",
+#                     "incident_state": "7",
+#                     "close_notes": f"Network denied {software_name}. Reason: {state['reason_rejection']}.",
+#                     "resolved_by": "system"
+#                 }
+#                 close_incident(state["incident_sys_id"], payload)
+
+#             return state
+
+#         state["network_approval"] = True
+
+#     print("Final value of Security Approval : ",state["security_approval"])
+#     print("Final value of network Approval : ",state["network_approval"])
+#     return state
+
+
+
+
+
 def security_network_approval_node(state):
     requester_id = state["requester_id"]
     software_name = state["software_requested"]
-    user_email = state["requester_email"]
-    user_sys_id = state["requester_sys_id"]
+    software_source = state["software_source"]
 
-    if state["security_approval"] is None:
+    L1_response = interrupt(
+        value = {
+            "prompt" : "L1 Approval required (Security + Network)",
+            "request_details" : {
+                "employee_id" : requester_id,
+                "software_requested" : software_name,
+                "request_reason" : state["request_reason"],
+                "software_source" : software_source,
+                "software_restricted" : state["is_software_restricted"],
+                "software_blacklisted" : state["is_software_blacklisted"],
+            },
+            "options" : ["Approve", "Deny"]
+        }
+    )
 
-        security_response = interrupt(
-            value={
-                "prompt": "L1 - Security Approval is required",
-                "request_details": {
-                    "employee_id": requester_id,
-                    "software_requested": software_name,
-                    "request_reason": state["request_reason"],
-                    "software_restricted": state["is_software_restricted"],
-                    "software_blacklisted": state["is_software_blacklisted"]
-                },
-                "options": ["Approve", "Deny"]
+    if L1_response.lower().startswith("den"):
+        reason = interrupt(
+            value = {
+                "prompt" : "Please provide the reason for rejecting this request."
             }
         )
 
-        if security_response.lower().startswith("den"):
-            reason = interrupt(
-                value={"prompt": "Please provide the reason for rejecting this request."}
-            )
+        state["security_approval"] = False
+        state["network_approval"] = False
+        state["reason_rejection"] = reason or "Not Provided."
 
-            state["security_approval"] = False
-            state["reason_rejection"] = reason or "Not Provided"
+        incident_sys_id = state["incident_sys_id"]
+        if incident_sys_id:
+            closure_note = (f"L1 denied request for {software_name} installation. "
+                            f"Reason : {state['reason_rejection']}.")
+            
+            payload = {
+                "caller": "admin",
+                "short_description": f"L1 approval for {software_name} requested by {requester_id} (Rejected)",
+                "close_code": "Solution provided",
+                "incident_state": "7",
+                "close_notes": closure_note,
+                "resolved_by": "system"
+            }
+            close_incident(incident_sys_id, payload)
 
-            if state.get("incident_sys_id"):
-                payload = {
-                    "caller": "admin",
-                    "short_description": f"Security rejected {software_name} request by {requester_id}",
-                    "close_code": "Rejected by Security",
-                    "incident_state": "7",
-                    "close_notes": f"Security denied {software_name}. Reason: {state['reason_rejection']}.",
-                    "resolved_by": "system"
-                }
-                close_incident(state["incident_sys_id"], payload)
-
-            return state
-
+        return state
+    
+    if L1_response.lower().startswith("appr"):
         state["security_approval"] = True
-
-    if state["network_approval"] is None:
-
-        network_response = interrupt(
-            value={
-                "prompt": "L1 - Network Approval is required",
-                "request_details": {
-                    "employee_id": requester_id,
-                    "software_requested": software_name,
-                    "request_reason": state["request_reason"],
-                    "software_restricted": state["is_software_restricted"],
-                    "software_blacklisted": state["is_software_blacklisted"]
-                },
-                "options": ["Approve", "Deny"]
-            }
-        )
-
-        if network_response.lower().startswith("den"):
-            reason = interrupt(
-                value={"prompt": "Please provide the reason for rejecting this request."}
-            )
-
-            state["network_approval"] = False
-            state["reason_rejection"] = reason or "Not Provided"
-
-            if state.get("incident_sys_id"):
-                payload = {
-                    "caller": "admin",
-                    "short_description": f"Network rejected {software_name} request by {requester_id}",
-                    "close_code": "Rejected by Network",
-                    "incident_state": "7",
-                    "close_notes": f"Network denied {software_name}. Reason: {state['reason_rejection']}.",
-                    "resolved_by": "system"
-                }
-                close_incident(state["incident_sys_id"], payload)
-
-            return state
-
         state["network_approval"] = True
+        state["reason_rejection"] = ""
+        state["is_request_valid"] = True
+        print("Request approved by L1 team.")
 
-    print("Final value of Security Approval : ",state["security_approval"])
-    print("Final value of network Approval : ",state["network_approval"])
+        incident_sys_id = state["incident_sys_id"]
+        if incident_sys_id:
+            update_note = (f"L1 approved request for {software_name} installation.")
+
+            # payload = {}
+            update_incident(incident_sys_id, payload)
+            
+        return state
+    
+    state["security_approval"] = False
+    state["network_approval"] = False
+    state["reason_rejection"] = "Unknown L1 Response"
+    print("Unknown L1 response - defaulting to request denied.")
     return state
