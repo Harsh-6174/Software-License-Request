@@ -7,6 +7,7 @@ class SoftwareRequestState(TypedDict):
     requester_email: str
     requester_sys_id: str
     incident_sys_id: str
+    incident_description: str
     is_requester_id_valid: bool
     software_requested : str
     request_reason : str

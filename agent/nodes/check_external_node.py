@@ -1,5 +1,6 @@
 import os, requests
 from requests.auth import HTTPBasicAuth
+from database.db_connection import save_pending_request
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,13 +44,20 @@ def check_external_node(state):
         state["reason_rejection"] = "Requested software is blacklisted and not present in Workelevate repo or SAM."
         return state
     
-    print("Requested software requires manager approval as it is not present in the organization's repo.")
+    print("Requested software requires approval workflow as it is not present in the organization's repo.")
     incident = raise_complete_approval_workflow_incident(user_sys_id, software_name, description)
     state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
     print(f"External software incident raised successfully : {incident.get("result", {}).get("number", "invalid")}")
+
+    save_pending_request(
+        employee_id = state["requester_id"],
+        software = state["software_requested"],
+        thread_id = state["thread_id"],
+        status = "pending_L1"
+    )
     
     state["incident_raised"] = True
     state["is_request_valid"] = True
-    state["requires_manager_approval"] = True
+    state["requires_manager_approval"] = False
     
     return state

@@ -13,4 +13,4 @@ def run_llm(prompt):
     # response = await llm.ainvoke(prompt)
     # return response.content
 
-    return '{"requester_id": "", "software_requested": "pycharm", "request_reason": "coding"}'
+    return '{"requester_id": "", "software_requested": "adobe reader", "request_reason": "view/edit pdf"}'

@@ -1,6 +1,6 @@
 from langgraph.types import interrupt
 import os, requests
-from database.db_connection import save_pending_manager_request
+from database.db_connection import save_pending_request
 from requests.auth import HTTPBasicAuth
 
 def raise_manager_approval_incident(user_sys_id, software_name, description):
@@ -65,7 +65,7 @@ def create_manager_approval_incident_node(state):
             state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
             print(f"Incident created: {incident.get('result', {}).get('number', 'invalid')}")
 
-        save_pending_manager_request(
+        save_pending_request(
             employee_id=state["requester_id"],
             software=state["software_requested"],
             thread_id=state["thread_id"],

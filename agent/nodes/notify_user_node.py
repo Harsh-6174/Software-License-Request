@@ -5,10 +5,10 @@ load_dotenv()
 
 def notify_user_node(state):
     if state["is_request_valid"] is False:
-        print(f"Your request was denied. Reason: {state["reason_rejection"]}")
+        print(f"1. Your request was denied. Reason: {state["reason_rejection"]}")
         return state
     elif state["requires_manager_approval"] and state["manager_decision"] != "approved":
-        print(f"Your request was denied. Reason: {state["reason_rejection"]}")
+        print(f"2. Your request was denied. Reason: {state["reason_rejection"]}")
         return state
     else:
         print("Software has been installed")

@@ -72,10 +72,14 @@ def build_graph():
     def route_after_check_external(state):
         if state["is_software_blacklisted"]:
             return "Blacklisted"
-        else:
-            return "Otherwise"
+        if state["role"] == "L1":
+            return "L1"
+        return "END"
 
     def route_after_security_network(state):
+        if state["role"] == "L1":
+            return "END"
+        
         if state["security_approval"] and state["network_approval"]:
             if state["software_type"] == "licensed":
                 return "licensed"
@@ -85,6 +89,9 @@ def build_graph():
         return "No Approval"
     
     def route_after_sam_approval(state):
+        if state["role"] == "L2":
+            return "END"
+        
         if state["sam_approval"]:
             return "approved"
         else:
@@ -174,7 +181,8 @@ def build_graph():
         route_after_check_external,
         {
             "Blacklisted": "reject_request",
-            "Otherwise": "security_network_approval"
+            "L1": "security_network_approval",
+            "END": END,
         }
     )
 
@@ -182,6 +190,7 @@ def build_graph():
         "security_network_approval",
         route_after_security_network,
         {
+            "END": END,
             "No Approval": "notify_user",
             "licensed": "sam_approval",
             "standard": "software_packaging"
@@ -192,6 +201,7 @@ def build_graph():
         "sam_approval",
         route_after_sam_approval,
         {
+            "END": END,
             "No Approval": "notify_user",
             "approved": "software_packaging"
         }

@@ -1,5 +1,6 @@
 from langgraph.types import interrupt
 from microservices.close_incident import close_incident
+from database.db_connection import update_request_status
 
 def manager_approval_node(state):
     requester_id = state["requester_id"]
@@ -30,6 +31,8 @@ def manager_approval_node(state):
         state["manager_decision"] = "denied"
         state["reason_rejection"] = reason or "Not Provided."
 
+        update_request_status(state["thread_id"], "rejected_manager")
+
         incident_sys_id = state["incident_sys_id"]
         if incident_sys_id:
             closure_note = (f"Manager denied request for {software_name} installation. "
@@ -52,6 +55,8 @@ def manager_approval_node(state):
         state["is_request_valid"] = True
         state["reason_rejection"] = ""
         print("Request approved by manager.")
+
+        update_request_status(state["thread_id"], "approved_manager")
 
         incident_sys_id = state["incident_sys_id"]
         if incident_sys_id:

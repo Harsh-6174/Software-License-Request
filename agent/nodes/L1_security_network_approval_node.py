@@ -1,6 +1,7 @@
 from langgraph.types import interrupt
 from microservices.close_incident import close_incident
 from microservices.update_incident import update_incident
+from database.db_connection import update_request_status
 
 def raise_external_software_incident():
     print("---------------------------------------------------------------------------")
@@ -253,6 +254,7 @@ def security_network_approval_node(state):
     requester_id = state["requester_id"]
     software_name = state["software_requested"]
     software_source = state["software_source"]
+    incident_description = state["incident_description"]
 
     L1_response = interrupt(
         value = {
@@ -280,6 +282,8 @@ def security_network_approval_node(state):
         state["network_approval"] = False
         state["reason_rejection"] = reason or "Not Provided."
 
+        update_request_status(state["thread_id"], "rejected_L1")
+
         incident_sys_id = state["incident_sys_id"]
         if incident_sys_id:
             closure_note = (f"L1 denied request for {software_name} installation. "
@@ -304,13 +308,37 @@ def security_network_approval_node(state):
         state["is_request_valid"] = True
         print("Request approved by L1 team.")
 
+        # update_request_status(state["thread_id"], "approved_L1")
+        if state["software_type"] == "licensed":
+            update_request_status(state["thread_id"], "pending_L2")
+        else:
+            update_request_status(state["thread_id"], "pending_L3")
+
         incident_sys_id = state["incident_sys_id"]
         if incident_sys_id:
-            update_note = (f"L1 approved request for {software_name} installation.")
+            if state["software_type"] == "standard":
+                next_step_note = (
+                    "Software classified as STANDARD. "
+                    "L2 approval is not required. "
+                    "Routing directly to L3 approval."
+                )
+            else:
+                next_step_note = (
+                    "Software classified as LICENSED. "
+                    "L2 approval is required before proceeding to L3."
+                )
 
-            # payload = {}
+            update_note = (
+                incident_description
+                + "\n\n-- Approved by L1 --\n"
+                + next_step_note
+            )
+
+            payload = {
+                "description": update_note
+            }
             update_incident(incident_sys_id, payload)
-            
+
         return state
     
     state["security_approval"] = False

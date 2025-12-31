@@ -49,7 +49,7 @@
   },
   "adobe reader": {
     "source": "external",
-    "license_type": "standard",
+    "license_type": "licensed",
     "is_restricted": false,
     "is_blacklisted": false
   },

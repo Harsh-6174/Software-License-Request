@@ -1,5 +1,6 @@
 import requests, os
 from requests.auth import HTTPBasicAuth
+from database.db_connection import save_pending_request
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -47,6 +48,16 @@ def license_allocation_node(state):
         incident = raise_license_allocation_incident(user_sys_id, software_name, description)
         state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
         print(f"Incident for license allocation raised successfully : {incident.get("result", {}).get("number", "invalid")}")
+
+        save_pending_request(
+            employee_id = requester_id,
+            software = software_name,
+            thread_id = state["thread_id"],
+            status = "approved_auto"
+        )
+
+        state["incident_raised"] = True
+        state["is_request_valid"] = True
 
     #Endpoint installation API remaining
     return state
