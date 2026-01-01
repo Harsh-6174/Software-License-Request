@@ -7,19 +7,19 @@ instance = os.getenv("SERVICENOW_INSTANCE")
 username = os.getenv("SERVICENOW_USERNAME")
 password = os.getenv("SERVICENOW_PASSWORD")
 
-def validate_request_node(state):
+async def validate_request_node(state):
     requester_id = state["requester_id"]
-    with httpx.Client() as client:
-        res = client.get(
+
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
             "http://localhost:8000/check-user",
-            params = {
-                "employee_id" : requester_id
+            params={
+                "employee_id": requester_id
             }
         )
+
     data = res.json()
-    print("---------------------------------------------------------------------------")
-    print(f"User Exists? - {data['exists']}")
-    
+
     if data["exists"] is False:
         state["is_requester_id_valid"] = False
         state["is_request_valid"] = False
@@ -27,17 +27,22 @@ def validate_request_node(state):
         state["reason_rejection"] = "Invalid employee ID"
         return state
 
+    instance = os.getenv("SERVICENOW_INSTANCE")
+    username = os.getenv("SERVICENOW_USERNAME")
+    password = os.getenv("SERVICENOW_PASSWORD")
+
     url = f"{instance}/api/now/table/sys_user"
-    with httpx.Client() as client:
-        user_sys_id = client.get(
+
+    async with httpx.AsyncClient(auth=(username, password)) as client:
+        user_sys_id = await client.get(
             url,
-            params = {
+            params={
                 "email": "admin@example.com",
                 "sysparm_fields": "sys_id",
                 "sysparm_limit": 1
-            },
-            auth = (username, password)
+            }
         )
+
     data = user_sys_id.json()
     result = data.get("result", [])
 
@@ -45,9 +50,9 @@ def validate_request_node(state):
         state["is_request_valid"] = False
         state["reason_rejection"] = "User not found in ServiceNow"
         return state
-    
+
     state["requester_sys_id"] = result[0]["sys_id"]
     state["is_requester_id_valid"] = True
     state["is_request_valid"] = True
-    
+
     return state

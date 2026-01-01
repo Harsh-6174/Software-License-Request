@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def notify_user_node(state):
+async def notify_user_node(state):
     if state["is_request_valid"] is False:
         print(f"1. Your request was denied. Reason: {state["reason_rejection"]}")
         return state
@@ -32,6 +32,6 @@ def notify_user_node(state):
                 "close_notes": closure_note,
                 "resolved_by": "system"
             }
-            close_incident(incident_sys_id, payload)
+            await close_incident(incident_sys_id, payload)
         
         return state

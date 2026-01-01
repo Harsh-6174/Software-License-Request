@@ -3,7 +3,7 @@ from microservices.close_incident import close_incident
 from microservices.update_incident import update_incident
 from database.db_connection import update_request_status
 
-def software_packaging_node(state):
+async def software_packaging_node(state):
     requester_id = state["requester_id"]
     software_name = state["software_requested"]
     software_source = state["software_source"]
@@ -31,7 +31,7 @@ def software_packaging_node(state):
             }
         )
 
-        update_request_status(
+        await update_request_status(
             thread_id=state["thread_id"],
             new_status="rejected",
             rejected_by="L3",
@@ -43,7 +43,7 @@ def software_packaging_node(state):
                 "incident_state": "7",
                 "close_notes": f"L3 rejected installation of {software_name}. Reason: {reason}"
             }
-            close_incident(state["incident_sys_id"], payload)
+            await close_incident(state["incident_sys_id"], payload)
 
         return state
 
@@ -52,7 +52,7 @@ def software_packaging_node(state):
         state["is_request_valid"] = True
         print("Request approved by L3 team.")
 
-        update_request_status(thread_id=state["thread_id"], new_status="approved")
+        await update_request_status(thread_id=state["thread_id"], new_status="approved")
 
         incident_sys_id = state["incident_sys_id"]
         if incident_sys_id:
@@ -65,7 +65,7 @@ def software_packaging_node(state):
             payload = {
                 "description": update_note
             }
-            update_incident(state["incident_sys_id"], payload)
+            await update_incident(state["incident_sys_id"], payload)
 
         return state
 

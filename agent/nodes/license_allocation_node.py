@@ -1,13 +1,10 @@
-import requests, os
-from requests.auth import HTTPBasicAuth
+import os, httpx
 from database.db_connection import save_pending_request
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def raise_license_allocation_incident(user_sys_id, software_name, description):
-    print("---------------------------------------------------------------------------")
-    print("Software license allocation (case-1: auto-approved).")
+async def raise_license_allocation_incident(user_sys_id, software_name, description):
     instance = os.getenv("SERVICENOW_INSTANCE")
     username = os.getenv("SERVICENOW_USERNAME")
     password = os.getenv("SERVICENOW_PASSWORD")
@@ -22,42 +19,62 @@ def raise_license_allocation_incident(user_sys_id, software_name, description):
         "subcategory": "installation",
     }
 
-    response = requests.post(url, json=payload, auth=HTTPBasicAuth(username,password), headers={"Content-Type": "application/json"})
+    async with httpx.AsyncClient(auth=(username, password)) as client:
+        response = await client.post(
+            url,
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
+
+    response.raise_for_status()
     return response.json()
 
-def license_allocation_node(state):
+async def license_allocation_node(state):
     requester_id = state["requester_id"]
     software_name = state["software_requested"]
     user_email = state["requester_email"]
     user_sys_id = state["requester_sys_id"]
     software_source = state["software_source"]
     software_type = state["software_type"]
+
     state["is_request_valid"] = True
 
-    description = (f"User has requested installation of {software_name}. " 
-    f"The software is classified as {software_type} and is already approved. " 
-    f"The software is detected in {software_source} repository. " 
-    f"Software installation is requested by : {requester_id} - {user_email}")
+    description = (
+        f"User has requested installation of {software_name}. "
+        f"The software is classified as {software_type} and is already approved. "
+        f"The software is detected in {software_source} repository. "
+        f"Software installation is requested by : {requester_id} - {user_email}"
+    )
 
     state["incident_description"] = description
 
-    auto_approved_condition = ((state["software_source"] == "workelevate" and state["software_type"] == "standard") or 
-    (state["software_source"] == "sam" and state["is_software_restricted"] is False and state["is_software_blacklisted"] is False))
+    auto_approved_condition = (
+        (software_source == "workelevate" and software_type == "standard")
+        or (
+            software_source == "sam"
+            and not state["is_software_restricted"]
+            and not state["is_software_blacklisted"]
+        )
+    )
 
     if auto_approved_condition:
-        incident = raise_license_allocation_incident(user_sys_id, software_name, description)
-        state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
-        print(f"Incident for license allocation raised successfully : {incident.get("result", {}).get("number", "invalid")}")
+        incident = await raise_license_allocation_incident(
+            user_sys_id,
+            software_name,
+            description
+        )
 
-        save_pending_request(
-            employee_id = requester_id,
-            software = software_name,
-            thread_id = state["thread_id"],
-            status = "approved_auto"
+        result = incident.get("result", {})
+        state["incident_sys_id"] = result.get("sys_id", "")
+
+        await save_pending_request(
+            employee_id=requester_id,
+            software=software_name,
+            thread_id=state["thread_id"],
+            status="approved_auto"
         )
 
         state["incident_raised"] = True
         state["is_request_valid"] = True
 
-    #Endpoint installation API remaining
     return state

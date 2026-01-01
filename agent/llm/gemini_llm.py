@@ -9,7 +9,7 @@ llm = ChatGoogleGenerativeAI(
     google_api_key = os.getenv("GOOGLE_API_KEY")
 )
 
-def run_llm(prompt):
+async def run_llm(prompt):
     # response = await llm.ainvoke(prompt)
     # return response.content
 

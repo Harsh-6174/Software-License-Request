@@ -1,11 +1,7 @@
-from langgraph.types import interrupt
-import os, requests
+import os, httpx
 from database.db_connection import save_pending_request
-from requests.auth import HTTPBasicAuth
 
-def raise_manager_approval_incident(user_sys_id, software_name, description):
-    print("---------------------------------------------------------------------------")
-    print("Approval request (case-2: Manager approval required).")
+async def raise_manager_approval_incident(user_sys_id, software_name, description):
     instance = os.getenv("SERVICENOW_INSTANCE")
     username = os.getenv("SERVICENOW_USERNAME")
     password = os.getenv("SERVICENOW_PASSWORD")
@@ -20,11 +16,18 @@ def raise_manager_approval_incident(user_sys_id, software_name, description):
         "subcategory": "installation"
     }
 
-    response = requests.post(url, json=payload, auth=HTTPBasicAuth(username,password), headers={"Content-Type": "application/json"})
+    async with httpx.AsyncClient(auth=(username, password)) as client:
+        response = await client.post(
+            url,
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
+
+    response.raise_for_status()
     return response.json()
 
 
-def create_manager_approval_incident_node(state):
+async def create_manager_approval_incident_node(state):
     requester_id = state["requester_id"]
     software_name = state["software_requested"]
     user_email = state["requester_email"]
@@ -54,21 +57,20 @@ def create_manager_approval_incident_node(state):
 
     if needs_approval:
         if not state.get("incident_sys_id"):
-            print("Creating Manager Approval Incident")
-
-            incident = raise_manager_approval_incident(
+            incident = await raise_manager_approval_incident(
                 user_sys_id,
                 software_name,
                 description
             )
 
-            state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
-            print(f"Incident created: {incident.get('result', {}).get('number', 'invalid')}")
+            result = incident.get("result", {})
+            state["incident_sys_id"] = result.get("sys_id", "")
+            print(f"Manager Approval Incident Created Sucessfully : {incident.get("result", {}).get("number", "invalid")}")
 
-        save_pending_request(
+        await save_pending_request(
             employee_id=state["requester_id"],
             software=state["software_requested"],
             thread_id=state["thread_id"],
         )
-    
+
     return state

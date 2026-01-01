@@ -1,22 +1,22 @@
-import os, requests
-from requests.auth import HTTPBasicAuth
+import os, httpx
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def close_incident(incident_sys_id, payload):
+async def close_incident(incident_sys_id, payload):
     instance = os.getenv("SERVICENOW_INSTANCE")
     username = os.getenv("SERVICENOW_USERNAME")
     password = os.getenv("SERVICENOW_PASSWORD")
 
     url = f"{instance}/api/now/table/incident/{incident_sys_id}"
 
-    response = requests.patch(
-        url,
-        json=payload,
-        auth=HTTPBasicAuth(username,password),
-        headers={"Content-Type": "application/json"}
-    )
+    async with httpx.AsyncClient(auth=(username, password)) as client:
+        response = await client.patch(
+            url,
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
 
-    print(f"Incident has been closed")
+    response.raise_for_status()
+    print("Incident has been closed")
     return response.json()

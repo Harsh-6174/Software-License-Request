@@ -2,7 +2,7 @@ from langgraph.types import interrupt
 from agent.llm.gemini_llm import run_llm
 import json, re
 
-def employee_submit_request_node(state):
+async def employee_submit_request_node(state):
     if state["is_requester_id_valid"] is False:
         new_id = interrupt(
             value = {
@@ -37,7 +37,7 @@ def employee_submit_request_node(state):
     {user_message}
     """
 
-    output = run_llm(prompt)
+    output = await run_llm(prompt)
     if output.startswith("```"):
         output = output.replace("```json","").replace("```","").strip()
     

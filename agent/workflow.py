@@ -1,8 +1,5 @@
 from langgraph.graph import START, END, StateGraph
 import aiosqlite
-import sqlite3
-from langgraph.checkpoint.sqlite import SqliteSaver
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from agent.state import SoftwareRequestState
 from agent.nodes.employee_submit_request_node import employee_submit_request_node
@@ -23,18 +20,18 @@ from agent.nodes.logging_process_node import logging_process_node
 
 
 
-def build_graph():
-    # conn = await aiosqlite.connect("workflow_state_async.db")
-    # checkpointer = AsyncSqliteSaver(conn)
+async def build_graph():
+    conn = await aiosqlite.connect("workflow_state_async.db")
+    checkpointer = AsyncSqliteSaver(conn)
     
     # conn = sqlite3.connect("workflow_state.db")
     # checkpointer = SqliteSaver(conn)
 
-    conn = sqlite3.connect(
-        "workflow_state.db",
-        check_same_thread=False
-    )
-    checkpointer = SqliteSaver(conn)
+    # conn = sqlite3.connect(
+    #     "workflow_state.db",
+    #     check_same_thread=False
+    # )
+    # checkpointer = SqliteSaver(conn)
 
     def route_after_validation(state):
         if state["is_request_valid"] is False and state["is_requester_id_valid"] is False:
@@ -219,5 +216,7 @@ def build_graph():
     graph.add_edge("logging_process", END)
 
     app = graph.compile(checkpointer=checkpointer)
+
+    app._db_conn = conn
 
     return app

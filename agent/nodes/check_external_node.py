@@ -1,11 +1,10 @@
-import os, requests
-from requests.auth import HTTPBasicAuth
+import os, httpx
 from database.db_connection import save_pending_request
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def raise_complete_approval_workflow_incident(user_sys_id, software_name, description):
+async def raise_complete_approval_workflow_incident(user_sys_id, software_name, description):
     instance = os.getenv("SERVICENOW_INSTANCE")
     username = os.getenv("SERVICENOW_USERNAME")
     password = os.getenv("SERVICENOW_PASSWORD")
@@ -20,10 +19,16 @@ def raise_complete_approval_workflow_incident(user_sys_id, software_name, descri
         "subcategory": "external_request"
     }
 
-    response = requests.post(url, json=payload, auth=HTTPBasicAuth(username,password), headers={"Content-Type": "application/json"})
+    async with httpx.AsyncClient(auth=(username, password)) as client:
+        response = await client.post(
+            url,
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
+
     return response.json()
 
-def check_external_node(state):
+async def check_external_node(state):
     print("Requested software is not present in Workelevate repo or SAM.")
 
     requester_id = state["requester_id"]
@@ -45,11 +50,11 @@ def check_external_node(state):
         return state
     
     print("Requested software requires approval workflow as it is not present in the organization's repo.")
-    incident = raise_complete_approval_workflow_incident(user_sys_id, software_name, description)
+    incident = await raise_complete_approval_workflow_incident(user_sys_id, software_name, description)
     state["incident_sys_id"] = incident.get("result", {}).get("sys_id", "")
     print(f"External software incident raised successfully : {incident.get("result", {}).get("number", "invalid")}")
 
-    save_pending_request(
+    await save_pending_request(
         employee_id = state["requester_id"],
         software = state["software_requested"],
         thread_id = state["thread_id"],
